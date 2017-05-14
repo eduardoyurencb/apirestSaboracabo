@@ -16,7 +16,7 @@ $user_id = NULL;
  * Regresa todos los asientos con su respectivo estado(L = libre, R = reservado, C = comprado) y demás parámetros.
  */
 $app->get('/asientos', function() {
-    
+
             $response = array();
             $db = new DbHandler();
 
@@ -37,8 +37,100 @@ $app->get('/asientos', function() {
                 array_push($response["asientos"], $tmp);
             }
 
+            echoRespnse(200, $response);     
+});
+
+$app->put('/asientos/reservar', function() use($app) {
+            $cuerpo = file_get_contents('php://input');
+            $jsonRequest = json_decode($cuerpo);
+            
+            /*
+                foreach ($jsonRequest as &$valor) {
+                    $idAsiento = $valor->idAsiento;
+                    $idMesa    = $valor->idMesa;
+                }
+            */
+
+            $db = new DbHandler();
+            $response = array();
+ 
+            $result = $db->reservarAsientos($jsonRequest);
+            
+            if ($result) {
+                $response["error"] = false;
+                $response["mensaje"] = "Asientos reservados correctamente";
+            } else {
+                $response["error"] = true;
+                $response["mensaje"] = "Ha ocurrido un error al momento de reservar los asientos";
+            }
+
             echoRespnse(200, $response);
             
+});
+
+$app->put('/asientos/comprar', function() use($app) {
+            $cuerpo = file_get_contents('php://input');
+            $jsonRequest = json_decode($cuerpo);
+
+            $db = new DbHandler();
+            $response = array();
+ 
+            $result = $db->comprarAsientos($jsonRequest);
+            
+            if ($result) {
+                $response["error"] = false;
+                $response["mensaje"] = "Asientos comprados correctamente";
+            } else {
+                $response["error"] = true;
+                $response["mensaje"] = "Ha ocurrido un error al momento de comprar los asientos";
+            }
+            echoRespnse(200, $response);
+});
+
+$app->put('/asientos/liberar/reservados', function() use($app) {
+            $db = new DbHandler();
+            $response = array();
+ 
+            $result = $db->liberarAsientosReservados();
+            $result = $result->fetch_assoc();
+
+            $response["error"] = false;
+            $response["mensaje"] = $result["mensaje_respuesta"];
+            $response["codigo_respuesta"] =  $result["codigo_respuesta"];
+            echoRespnse(200, $response);
+});
+
+
+$app->post('/register', function() use ($app) {
+            // check for required params
+            verifyRequiredParams(array('name', 'email', 'password'));
+ 
+            $response = array();
+ 
+            // reading post params
+            $name = $app->request->post('name');
+            $email = $app->request->post('email');
+            $password = $app->request->post('password');
+ 
+            // validating email address
+            validateEmail($email);
+ 
+            $db = new DbHandler();
+            $res = $db->createUser($name, $email, $password);
+ 
+            if ($res == USER_CREATED_SUCCESSFULLY) {
+                $response["error"] = false;
+                $response["message"] = "You are successfully registered";
+                echoRespnse(201, $response);
+            } else if ($res == USER_CREATE_FAILED) {
+                $response["error"] = true;
+                $response["message"] = "Oops! An error occurred while registereing";
+                echoRespnse(200, $response);
+            } else if ($res == USER_ALREADY_EXISTED) {
+                $response["error"] = true;
+                $response["message"] = "Sorry, this email already existed";
+                echoRespnse(200, $response);
+            }
 });
 
 

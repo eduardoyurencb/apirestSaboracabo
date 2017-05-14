@@ -27,10 +27,63 @@ class DbHandler {
     public function getAsientos() {
         $stmt = $this->conn->prepare("SELECT * FROM asiento ORDER BY idMesa");
         $stmt->execute();
-        $tasks = $stmt->get_result();
+        $asientos = $stmt->get_result();
         $stmt->close();
-        return $tasks;
+        return $asientos;
     }
+
+    public function reservarAsientos($jsonRequest){
+        $contador=0;
+        foreach ($jsonRequest as &$valor) {
+            $idAsiento = $valor->idAsiento;
+            $idMesa    = $valor->idMesa;
+            if($contador == 0){
+                $queryUpdate = "(idMesa =  '".$idMesa."' and idAsiento = '".$idAsiento."')";
+                $contador = 1;
+            }else{
+                $queryUpdate = $queryUpdate . " || (idMesa =  '".$idMesa."' and idAsiento = '".$idAsiento."')";
+            }
+        }
+        print_r($queryUpdate);
+        
+        $stmt = $this->conn->prepare("UPDATE asiento SET  fecha_estatus=Now(), estatus = 'R'  WHERE " . $queryUpdate);                                                                     
+        $result = $stmt->execute();
+        $stmt->close();
+        
+        return $result;
+    }
+
+    public function comprarAsientos($jsonRequest){
+        $contador=0;
+        foreach ($jsonRequest as &$valor) {
+            $idAsiento = $valor->idAsiento;
+            $idMesa    = $valor->idMesa;
+            if($contador == 0){
+                $queryUpdate = "(idMesa =  '".$idMesa."' and idAsiento = '".$idAsiento."')";
+                $contador = 1;
+            }else{
+                $queryUpdate = $queryUpdate . " || (idMesa =  '".$idMesa."' and idAsiento = '".$idAsiento."')";
+            }
+        }
+        print_r($queryUpdate);
+        
+        $stmt = $this->conn->prepare("UPDATE asiento SET  fecha_estatus=Now(), estatus = 'C'  WHERE " . $queryUpdate);                                                                     
+        $result = $stmt->execute();
+        $stmt->close();
+        
+        return $result;
+    }
+
+    public function liberarAsientosReservados(){
+        $stmt = $this->conn->prepare("CALL liberar_asientos_reservados_caducados()");                                                                     
+        $result = $stmt->execute();
+        $response = $stmt->get_result();
+        $stmt->close();
+        
+        return $response;
+    }
+
+
  
     /* ------------- `users` table method ------------------ */
  
