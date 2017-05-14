@@ -11,7 +11,11 @@ $app = new \Slim\Slim();
 // User id from db - Global Variable
 $user_id = NULL;
  
-$app->get('/hola', function() {
+
+/**
+ * Regresa todos los asientos con su respectivo estado(L = libre, R = reservado, C = comprado) y demás parámetros.
+ */
+$app->get('/asientos', function() {
     
             $response = array();
             $db = new DbHandler();
