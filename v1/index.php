@@ -100,37 +100,54 @@ $app->put('/asientos/liberar/reservados', function() use($app) {
             echoRespnse(200, $response);
 });
 
-
-$app->post('/register', function() use ($app) {
+$app->post('/compra/registrar', function() use ($app) {
             // check for required params
-            verifyRequiredParams(array('name', 'email', 'password'));
+            //verifyRequiredParams(array('nombre', 'apellidos'));
  
             $response = array();
- 
-            // reading post params
-            $name = $app->request->post('name');
-            $email = $app->request->post('email');
-            $password = $app->request->post('password');
- 
+            $cuerpo = file_get_contents('php://input');
+            $jsonRequest = json_decode($cuerpo);
+            print_r($jsonRequest);
+
+            $nombre    = $jsonRequest->nombre;
+            $apellido  = $jsonRequest->apellido;
+            $email     = $jsonRequest->email;
+
+          
             // validating email address
-            validateEmail($email);
+            //validateEmail($email);
  
             $db = new DbHandler();
-            $res = $db->createUser($name, $email, $password);
- 
-            if ($res == USER_CREATED_SUCCESSFULLY) {
-                $response["error"] = false;
-                $response["message"] = "You are successfully registered";
-                echoRespnse(201, $response);
-            } else if ($res == USER_CREATE_FAILED) {
+            
+            $result = $db->registrarCompra($nombre, $apellido, $email);
+            $result = $result->fetch_assoc();
+
+
+            if($result["codigo_respuesta"] == '0'){
+        
+                $idCompra = $result["id_compra"];
+                print_r("idcompraaaa" . $idCompra);
+                $asientosComprados = $jsonRequest->asientos;
+                print_r($asientosComprados);
+                $result = $db->comprarAsientos($asientosComprados);
+                /**
+                * Cambiar esto cuando se haga el store procedure
+                */
+                if ($result) {
+                    $result = $db->registrarDetalleCompra($asientosComprados, $idCompra);
+                    $response["error"] = false;
+                    $response["mensaje"] = "Asientos comprados correctamente";
+                } else {
+                    $response["error"] = true;
+                    $response["mensaje"] = "Ha ocurrido un error al momento de comprar los asientos";
+                }
+                    echoRespnse(200, $response);
+            }else{
                 $response["error"] = true;
-                $response["message"] = "Oops! An error occurred while registereing";
-                echoRespnse(200, $response);
-            } else if ($res == USER_ALREADY_EXISTED) {
-                $response["error"] = true;
-                $response["message"] = "Sorry, this email already existed";
-                echoRespnse(200, $response);
-            }
+                $response["mensaje"] = $result["mensaje_respuesta"];
+                $response["codigo_respuesta"] =  $result["codigo_respuesta"];
+                echoRespnse(200, $response);   
+            }   
 });
 
 

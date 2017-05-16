@@ -69,6 +69,7 @@ class DbHandler {
         
         $stmt = $this->conn->prepare("UPDATE asiento SET  fecha_estatus=Now(), estatus = 'C'  WHERE " . $queryUpdate);                                                                     
         $result = $stmt->execute();
+        //$response = $stmt->get_result();
         $stmt->close();
         
         return $result;
@@ -79,6 +80,30 @@ class DbHandler {
         $result = $stmt->execute();
         $response = $stmt->get_result();
         $stmt->close();
+        
+        return $response;
+    }
+
+    public function registrarCompra($nombre, $apellido, $email) {
+        
+        $stmt = $this->conn->prepare("CALL COMPRAALT('".$nombre."','".$apellido."')");
+        $result = $stmt->execute();
+        $response = $stmt->get_result();
+        $stmt->close();
+        
+        return $response;
+    }
+
+    public function registrarDetalleCompra($jsonRequest, $idCompra) {
+        foreach ($jsonRequest as &$valor) {
+            $idAsiento = $valor->idAsiento;
+            $idMesa    = $valor->idMesa;
+
+            $stmt = $this->conn->prepare("CALL DETCOMPRAALT(".$idCompra.",'".$idAsiento."','".$idMesa."')");
+            $result = $stmt->execute();
+            $response = $stmt->get_result();
+            $stmt->close();
+        }
         
         return $response;
     }
