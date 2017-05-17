@@ -40,6 +40,91 @@ $app->get('/asientos', function() {
             echoRespnse(200, $response);     
 });
 
+/**
+* Regresa la informacion de una compra.
+*/
+
+$app->get('/facturas/:id', function($compra_id) use($app) {
+    // check for required params
+    //print_r($compra_id);
+
+    $response = array();
+    $db = new DbHandler();
+    $result = $db->consultarCompra($compra_id);
+    //print_r($result);
+    $contador = 0;
+
+    $response["error"] = false;
+    $response["num_asientos"] = $result->num_rows;
+    $response["id_compra"]  = $compra_id;
+    $response["asientos"] = array();
+
+    while ($row = $result->fetch_assoc()) {
+            $tmp = array();
+
+            if($contador == 0){
+                $response["codigo_respuesta"]   = $row["codigo_respuesta"];
+                $response["mensaje_respuesta"]  = $row["mensaje_respuesta"];
+                $contador = 1;
+            }
+
+            if($row["codigo_respuesta"] ==  0){
+                $tmp["id_asiento"] = $row["idAsiento"];
+                $tmp["id_mesa"] = $row["idMesa"];
+                $tmp["precio"] = $row["precio"];
+                array_push($response["asientos"], $tmp);
+            }else{
+                break;
+            }
+            
+            
+    }
+
+
+    echoRespnse(200, $response);
+    //$response["numero_asientos"] = $result->num_rows;
+    //$response["error"] = false;
+
+    //echoRespnse(200, $response);   
+    //$result = $result->fetch_assoc();
+    //print_r($result);
+
+/*
+    $response["error"] = false;
+    $response["mensaje"] = $result["mensaje_respuesta"];
+    $response["codigo_respuesta"] =  $result["codigo_respuesta"];
+    echoRespnse(200, $response);
+    */
+
+/*
+    verifyRequiredParams(array('task', 'status'));
+
+    global $user_id;            
+    $task = $app->request->put('task');
+    $status = $app->request->put('status');
+
+    
+    $response = array();
+
+    // updating task
+    $result = $db->updateTask($user_id, $task_id, $task, $status);
+    if ($result) {
+        // task updated successfully
+        $response["error"] = false;
+        $response["message"] = "Task updated successfully";
+    } else {
+        // task failed to update
+        $response["error"] = true;
+        $response["message"] = "Task failed to update. Please try again!";
+    }
+    echoRespnse(200, $response);
+    */
+});
+
+
+/**
+ * Cambia los asientos a estatus reservado, mientras el usuario fianliza su compra.
+ */
 $app->put('/asientos/reservar', function() use($app) {
             $cuerpo = file_get_contents('php://input');
             $jsonRequest = json_decode($cuerpo);
@@ -68,6 +153,9 @@ $app->put('/asientos/reservar', function() use($app) {
             
 });
 
+/**
+ * Actualiza el estatus de los asientos a comprados para que ya no puedan ser vendidos.
+ */
 $app->put('/asientos/comprar', function() use($app) {
             $cuerpo = file_get_contents('php://input');
             $jsonRequest = json_decode($cuerpo);
@@ -87,6 +175,10 @@ $app->put('/asientos/comprar', function() use($app) {
             echoRespnse(200, $response);
 });
 
+
+/**
+ * Actualiza el estatus de los asientos a L(Libres) cuando el tiempo de espera a expirado.
+ */
 $app->put('/asientos/liberar/reservados', function() use($app) {
             $db = new DbHandler();
             $response = array();
@@ -100,6 +192,9 @@ $app->put('/asientos/liberar/reservados', function() use($app) {
             echoRespnse(200, $response);
 });
 
+/**
+ * Registra la venta
+ */
 $app->post('/compra/registrar', function() use ($app) {
             // check for required params
             //verifyRequiredParams(array('nombre', 'apellidos'));
@@ -149,6 +244,7 @@ $app->post('/compra/registrar', function() use ($app) {
                 echoRespnse(200, $response);   
             }   
 });
+
 
 
 /**

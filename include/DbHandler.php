@@ -44,7 +44,6 @@ class DbHandler {
                 $queryUpdate = $queryUpdate . " || (idMesa =  '".$idMesa."' and idAsiento = '".$idAsiento."')";
             }
         }
-        print_r($queryUpdate);
         
         $stmt = $this->conn->prepare("UPDATE asiento SET  fecha_estatus=Now(), estatus = 'R'  WHERE " . $queryUpdate);                                                                     
         $result = $stmt->execute();
@@ -105,6 +104,14 @@ class DbHandler {
             $stmt->close();
         }
         
+        return $response;
+    }
+
+    public function consultarCompra($idCompra){
+        $stmt = $this->conn->prepare("CALL COMPRACONSUL(".$idCompra.")");
+        $result = $stmt->execute();
+        $response = $stmt->get_result();
+        $stmt->close();
         return $response;
     }
 
