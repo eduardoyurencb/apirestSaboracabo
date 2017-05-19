@@ -113,22 +113,13 @@ $app->put('/asientos/liberar/reservados', function() use($app) {
  * Actualiza el estatus de los asientos a comprados para que ya no puedan ser vendidos.
  */
 $app->put('/asientos/comprar', function() use($app) {
-            $cuerpo = file_get_contents('php://input');
-            $jsonRequest = json_decode($cuerpo);
+    
+    $cuerpo = file_get_contents('php://input');
+    $jsonRequest = json_decode($cuerpo);
 
-            $db = new DbHandler();
-            $response = array();
- 
-            $result = $db->comprarAsientos($jsonRequest);
-            
-            if ($result) {
-                $response["error"] = false;
-                $response["mensaje"] = "Asientos comprados correctamente";
-            } else {
-                $response["error"] = true;
-                $response["mensaje"] = "Ha ocurrido un error al momento de comprar los asientos";
-            }
-            echoRespnse(200, $response);
+    $db = new DbHandler();        
+    $response = $db->comprarAsientos($jsonRequest);
+    echoRespnse(200, $response);        
 });
 
 
@@ -141,21 +132,49 @@ $app->post('/compra/registrar', function() use ($app) {
             // check for required params
             //verifyRequiredParams(array('nombre', 'apellidos'));
  
-            $response = array();
+            $newResponse = array();
             $cuerpo = file_get_contents('php://input');
             $jsonRequest = json_decode($cuerpo);
-            print_r($jsonRequest);
 
             $nombre    = $jsonRequest->nombre;
             $apellido  = $jsonRequest->apellido;
             $email     = $jsonRequest->email;
 
-          
-            // validating email address
-            //validateEmail($email);
- 
+            $asientosComprados = $jsonRequest->asientos;
+
             $db = new DbHandler();
+            $response = $db->comprarAsientos($asientosComprados);
             
+            print_r($response["codigo_respuesta"]);
+            $codRespuesta = $response["codigo_respuesta"];
+            if($codRespuesta == "0"){
+                print_r("siguiente paso");
+                $result = $db->registrarCompra($nombre, $apellido, $email);
+                $result = $result->fetch_assoc();
+
+                if($result["codigo_respuesta"] == '0'){
+                    print_r("siguiente paso22");
+                    $idCompra = $result["id_compra"];
+                    $result = $db->registrarDetalleCompra($asientosComprados, $idCompra);
+
+                    $newResponse["error"] = false;
+                    $newResponse["mensaje"] = "Asientos comprados correctamente";
+                    $newResponse["codigo_respuesta"] =  '0';
+
+                    echoRespnse(200, $newResponse);
+                }else{
+                    $newResponse["error"] = true;
+                    $newResponse["mensaje"] = $result["mensaje_respuesta"];
+                    $newResponse["codigo_respuesta"] =  $result["codigo_respuesta"];
+                    echoRespnse(200, $newResponse);
+                }
+
+            }else{
+                echoRespnse(200,$response);
+            }
+
+/* 
+            $db = new DbHandler();
             $result = $db->registrarCompra($nombre, $apellido, $email);
             $result = $result->fetch_assoc();
 
@@ -170,6 +189,7 @@ $app->post('/compra/registrar', function() use ($app) {
                 /**
                 * Cambiar esto cuando se haga el store procedure
                 */
+                /*
                 if ($result) {
                     $result = $db->registrarDetalleCompra($asientosComprados, $idCompra);
                     $response["error"] = false;
@@ -184,7 +204,8 @@ $app->post('/compra/registrar', function() use ($app) {
                 $response["mensaje"] = $result["mensaje_respuesta"];
                 $response["codigo_respuesta"] =  $result["codigo_respuesta"];
                 echoRespnse(200, $response);   
-            }   
+            } 
+            */
 });
 
 

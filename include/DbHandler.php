@@ -88,15 +88,93 @@ class DbHandler {
 
     public function comprarAsientos($jsonRequest){
         $contador=0;
+        $asientosValidos = true;
+        $response = array();
+
         foreach ($jsonRequest as &$valor) {
             $idAsiento = $valor->idAsiento;
             $idMesa    = $valor->idMesa;
+
+            $stmt = $this->conn->prepare("SELECT * FROM asiento where idAsiento = '" . $idAsiento . "' and idMesa = '" . $idMesa ."'");
+            $stmt->execute();
+            $asientoResul = $stmt->get_result();
+            $stmt->close();
+
+            if($asientoResul -> num_rows == 0 || $asientoResul->fetch_assoc()["estatus"]!="R"){
+                print_r("Entro a asientos no válidos");
+                $asientosValidos = false;
+                break;
+            }
+
             if($contador == 0){
                 $queryUpdate = "(idMesa =  '".$idMesa."' and idAsiento = '".$idAsiento."')";
                 $contador = 1;
             }else{
                 $queryUpdate = $queryUpdate . " || (idMesa =  '".$idMesa."' and idAsiento = '".$idAsiento."')";
             }
+        }
+
+        if($asientosValidos){
+            $stmt = $this->conn->prepare("UPDATE asiento SET  fecha_estatus=Now(), estatus = 'C'  WHERE " . $queryUpdate);                              
+            $result = $stmt->execute();
+            //$response = $stmt->get_result();
+            $stmt->close();
+
+            if($result){
+                $response["error"] = "false";
+                $response["codigo_respuesta"]   = "0";
+                $response["mensaje_respuesta"]  = "Los asientos han sido actualizados a comprados exitosamente";
+            }else{
+                $response["error"] = "true";
+                $response["codigo_respuesta"]   = "1";
+                $response["mensaje_respuesta"]  = "Ha ocurrido un error de BD";
+            }
+        }else{
+            print_r("  Else negativo");
+            if($asientoResul -> num_rows == 0){
+                print_r("  Ningun resultado regresado");
+                $response["error"] = "true";
+                $response["codigo_respuesta"]   = "2";
+                $response["mensaje_respuesta"]  = "Alguno(s) de los asientos ingresados no existe";
+            }else{
+                print_r("  Elgun asienton no esta reservado");
+                $response["error"] = "true";
+                $response["codigo_respuesta"]   = "3";
+                $response["mensaje_respuesta"]  = "Alguno(s) de los asientos no se encuentran reservados";
+            }    
+        }   
+
+        return $response;
+
+        //print_r($response);
+
+        /*
+        foreach ($jsonRequest as &$valor) {
+            $idAsiento = $valor->idAsiento;
+            $idMesa    = $valor->idMesa;
+
+            $stmt = $this->conn->prepare("SELECT * FROM asiento where idAsiento = '" . $idAsiento . "' and idMesa = '" . $idMesa ."'");
+            $stmt->execute();
+            $asientoResul = $stmt->get_result();
+            $stmt->close();
+
+            print_r($asientoResul->fetch_assoc());
+        }
+
+/*            if($asientoResul -> num_rows == 0 || $asientoResul->fetch_assoc()["estatus"]!="L"){
+                $asientosValidos = false;
+                break;
+            }
+
+            if($contador == 0){
+                $queryUpdate = "(idMesa =  '".$idMesa."' and idAsiento = '".$idAsiento."')";
+                $contador = 1;
+            }else{
+                $queryUpdate = $queryUpdate . " || (idMesa =  '".$idMesa."' and idAsiento = '".$idAsiento."')";
+            }
+        }
+/*
+            
         }
         print_r($queryUpdate);
         
@@ -106,6 +184,7 @@ class DbHandler {
         $stmt->close();
         
         return $result;
+        */
     }
 
     public function liberarAsientosReservados(){
