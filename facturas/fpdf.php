@@ -1141,9 +1141,12 @@ function _endpage()
 
 function _loadfont($font)
 {
+	//echo " 2 " . $font;
+	//echo " 3 " . dirname(__FILE__);
+
 	// Load a font definition file from the font directory
-	include($this->fontpath.$font);
-	//include("/opt/lampp/lib/php/fonts/helveticab.php");
+	//include($this->fontpath.$font);
+	include(dirname(__FILE__)."/".$this->fontpath.$font);
 	$a = get_defined_vars();
 	if(!isset($a['name']))
 		$this->Error('Could not include font definition file');

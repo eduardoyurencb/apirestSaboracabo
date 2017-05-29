@@ -1,7 +1,9 @@
 <?php
  
 require_once '../include/DbHandler.php';
-//require_once '../include/PassHash.php';
+require_once '../include/email/gmail.php';
+require_once '../facturas/generadorFactura.php';
+
 require '.././libs/Slim/Slim.php';
  
 \Slim\Slim::registerAutoloader();
@@ -161,6 +163,19 @@ $app->post('/compra/registrar', function() use ($app) {
                     $newResponse["mensaje"] = "Asientos comprados correctamente";
                     $newResponse["codigo_respuesta"] =  '0';
 
+                    $asientosString;
+                    foreach ($asientosComprados as &$valor) {
+                        $idAsiento = $valor->idAsiento;
+                        $idMesa    = $valor->idMesa;
+                        $asientosString = $asientosString . $idAsiento . $idMesa . ", ";
+                    }
+                    
+                    $dbFactura = new GeneradorFactura();
+                    $dbFactura->generateBill($nombre . " " . $apellido , $email, $idCompra, $asientosString);
+
+                    $dbEmail = new EmaillHandler();
+                    $dbEmail->constructEmail($nombre, $email, $idCompra);
+                    
                     echoRespnse(200, $newResponse);
                 }else{
                     $newResponse["error"] = true;
@@ -173,39 +188,22 @@ $app->post('/compra/registrar', function() use ($app) {
                 echoRespnse(200,$response);
             }
 
-/* 
-            $db = new DbHandler();
-            $result = $db->registrarCompra($nombre, $apellido, $email);
-            $result = $result->fetch_assoc();
+});
 
+/**
+ * Registra la venta
+ */
+$app->post('/boleto/enviarEmail', function() use ($app) {
+    $dbEmail = new EmaillHandler();
+    $dbEmail->constructEmail("Eduardo Yuren", "eduardoyurencb@gmail.com", "6");
+});
 
-            if($result["codigo_respuesta"] == '0'){
-        
-                $idCompra = $result["id_compra"];
-                print_r("idcompraaaa" . $idCompra);
-                $asientosComprados = $jsonRequest->asientos;
-                print_r($asientosComprados);
-                $result = $db->comprarAsientos($asientosComprados);
-                /**
-                * Cambiar esto cuando se haga el store procedure
-                */
-                /*
-                if ($result) {
-                    $result = $db->registrarDetalleCompra($asientosComprados, $idCompra);
-                    $response["error"] = false;
-                    $response["mensaje"] = "Asientos comprados correctamente";
-                } else {
-                    $response["error"] = true;
-                    $response["mensaje"] = "Ha ocurrido un error al momento de comprar los asientos";
-                }
-                    echoRespnse(200, $response);
-            }else{
-                $response["error"] = true;
-                $response["mensaje"] = $result["mensaje_respuesta"];
-                $response["codigo_respuesta"] =  $result["codigo_respuesta"];
-                echoRespnse(200, $response);   
-            } 
-            */
+/**
+ * Generar factura
+ */
+$app->post('/boleto/generar', function() use ($app) {
+    $dbFactura = new GeneradorFactura();
+    $dbFactura->generateBill('Itzayaba Cabrera', 'itza@gmail.com', '1', '1A1, 1A2');
 });
 
 
