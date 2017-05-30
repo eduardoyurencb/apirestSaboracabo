@@ -68,8 +68,8 @@ class GeneradorFactura{
         $pdf->Cell(60, 5, '* Asientos: '.$asientos, 0, 0, 'L', False);
 
         $pdf->Output(dirname(__FILE__)."/archivo_facturas/".$numeroCompra.".pdf",'F');
-		echo "<script language='javascript'>window.open('ssssprueba.pdf','_self','');</script>";//para ver el archivo pdf generado
-		exit;
+		//echo "<script language='javascript'>window.open('ssssprueba.pdf','_self','');</script>";//para ver el archivo pdf generado
+		//exit;
 	} 
 }        
 ?>

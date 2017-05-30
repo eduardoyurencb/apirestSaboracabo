@@ -147,15 +147,12 @@ $app->post('/compra/registrar', function() use ($app) {
             $db = new DbHandler();
             $response = $db->comprarAsientos($asientosComprados);
             
-            print_r($response["codigo_respuesta"]);
             $codRespuesta = $response["codigo_respuesta"];
             if($codRespuesta == "0"){
-                print_r("siguiente paso");
                 $result = $db->registrarCompra($nombre, $apellido, $email);
                 $result = $result->fetch_assoc();
 
                 if($result["codigo_respuesta"] == '0'){
-                    print_r("siguiente paso22");
                     $idCompra = $result["id_compra"];
                     $result = $db->registrarDetalleCompra($asientosComprados, $idCompra);
 
@@ -176,7 +173,11 @@ $app->post('/compra/registrar', function() use ($app) {
                     $dbEmail = new EmaillHandler();
                     $dbEmail->constructEmail($nombre, $email, $idCompra);
                     
+                    //$dbEmail = new EmaillHandler();
+                    //$dbEmail->constructEmail("Eduardo Yuren", "eduardoyurencb@gmail.com", "6");
+                    
                     echoRespnse(200, $newResponse);
+                    exit;
                 }else{
                     $newResponse["error"] = true;
                     $newResponse["mensaje"] = $result["mensaje_respuesta"];

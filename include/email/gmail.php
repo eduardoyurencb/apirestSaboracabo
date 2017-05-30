@@ -15,7 +15,7 @@ class EmaillHandler {
 		require 'PHPMailerAutoload.php';
 	}
 
-	function constructEmail($nombre, $email, $nameFile) {
+	function constructEmail($nombre, $email, $idCompra) {
 		//Create a new PHPMailer instance
 		$mail = new PHPMailer;
 		
@@ -26,10 +26,10 @@ class EmaillHandler {
 		// 0 = off (for production use)
 		// 1 = client messages
 		// 2 = client and server messages
-		$mail->SMTPDebug = 2;
+		$mail->SMTPDebug = 0;
 
 		//Ask for HTML-friendly debug output
-		$mail->Debugoutput = 'html';
+		//$mail->Debugoutput = 'html';
 
 		//Set the hostname of the mail server
 		$mail->Host = 'quuos.com';
@@ -77,13 +77,13 @@ class EmaillHandler {
 		$mail->msgHTML(file_get_contents(dirname(__FILE__).'/contents.html'), dirname(__FILE__));
 
 		//Replace the plain text body with one created manually
-		$mail->AltBody = 'This is a plain-text message body';
+		$mail->AltBody = 'Confirmación de boletos';
 
 		echo "Directorio: " .__FILE__;
 		//Attach an image file
 		//$mail->addAttachment(dirname(__FILE__).'/phpmailer_mini.png', 'My uploaded file');
 		// /Applications/XAMPP/xamppfiles/htdocs/ws/include/email/gmail.php
-		$mail->addAttachment(dirname(__FILE__).'/../../facturas/archivo_facturas/'.$nameFile.'.pdf', 'Entradas Sabor a Cabo');
+		$mail->addAttachment(dirname(__FILE__).'/../../facturas/archivo_facturas/'.$idCompra.'.pdf', 'Entradas Sabor a Cabo');
 		//$mail->addAttachment('/Applications/XAMPP/xamppfiles/htdocs/ws/include/email/../../facturas/archivo_facturas/6.pdf', 'Entradas Sabor a Cabo');
 
 		//send the message, check for errors
