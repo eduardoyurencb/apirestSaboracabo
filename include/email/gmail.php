@@ -79,7 +79,6 @@ class EmaillHandler {
 		//Replace the plain text body with one created manually
 		$mail->AltBody = 'Confirmación de boletos';
 
-		echo "Directorio: " .__FILE__;
 		//Attach an image file
 		//$mail->addAttachment(dirname(__FILE__).'/phpmailer_mini.png', 'My uploaded file');
 		// /Applications/XAMPP/xamppfiles/htdocs/ws/include/email/gmail.php
@@ -89,9 +88,9 @@ class EmaillHandler {
 		//send the message, check for errors
 	
 		if (!$mail->send()) {
-		    echo "Mailer Error: " . $mail->ErrorInfo;
+		    //echo "Mailer Error: " . $mail->ErrorInfo;
 		} else {
-		    echo "Message sent!";
+		    //echo "Message sent!";
 		}
 	}
 }
