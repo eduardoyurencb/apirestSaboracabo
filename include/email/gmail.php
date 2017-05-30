@@ -32,13 +32,13 @@ class EmaillHandler {
 		$mail->Debugoutput = 'html';
 
 		//Set the hostname of the mail server
-		$mail->Host = 'smtp.gmail.com';
+		$mail->Host = 'quuos.com';
 		// use
 		// $mail->Host = gethostbyname('smtp.gmail.com');
 		// if your network does not support SMTP over IPv6
 
 		//Set the SMTP port number - 587 for authenticated TLS, a.k.a. RFC4409 SMTP submission
-		$mail->Port = 587;
+		$mail->Port = 25;
 
 		//Set the encryption system to use - ssl (deprecated) or tls
 		$mail->SMTPSecure = 'tls';
@@ -46,14 +46,22 @@ class EmaillHandler {
 		//Whether to use SMTP authentication
 		$mail->SMTPAuth = true;
 
+		$mail->SMTPOptions = array(
+    	'ssl' => array(
+        	'verify_peer' => false,
+        	'verify_peer_name' => false,
+        	'allow_self_signed' => true
+    	)
+);
+
 		//Username to use for SMTP authentication - use full email address for gmail
-		$mail->Username = "saboracabo2017@gmail.com";
+		$mail->Username = "prueba1@quuos.com";
 
 		//Password to use for SMTP authentication
-		$mail->Password = "2017saboracabo";
+		$mail->Password = "loscabos2017";
 
 		//Set who the message is to be sent from
-		$mail->setFrom('saboracabo2017@gmail.com', 'SaborACabo');
+		$mail->setFrom('prueba1@quuos.com', 'SaborACabo');
 
 		//Set an alternative reply-to address
 		//$mail->addReplyTo('eduardoyurencb@gmail.com', 'First Last');
